@@ -1,5 +1,7 @@
 'use strict';
 
+import { Buffer } from 'buffer';
+
 import React, {
     Component,
     StyleSheet,
@@ -7,15 +9,33 @@ import React, {
     View,
     Image,
     TextInput,
-    TouchableHighlight
+    TouchableHighlight,
+    ActivityIndicatorIOS
 } from 'react-native';
 
 class Login extends Component {
     constructor (props){
         super(props);
+        this.onLoginPressed = this.onLoginPressed.bind(this);
+        this.state = {
+            showProgress: false
+        };
     }
     
     render (){
+        var errorCtrl = <View />;
+        if (this.state.badCredentials) {
+            errorCtrl = <Text style={styles.error}>
+                Incorrect username or password
+            </Text>
+        }
+        
+        if (this.state.unknownError) {
+            errorCtrl = <Text style={styles.error}>
+                Unknown error
+            </Text>
+        }
+        
         return (
             <View style={styles.container}>
                 <Image
@@ -25,22 +45,73 @@ class Login extends Component {
                 >
                 </Image>
                 <Text style={styles.heading}>Github Browser</Text>
-                <TextInput 
+                <TextInput
+                    onChangeText={(text) => this.setState({username: text})}
                     style={styles.input} 
                     placeholder="Username" 
                 />
                 <TextInput 
+                    onChangeText={(text) => this.setState({password: text})}
                     style={styles.input} 
                     placeholder="Password" 
                     secureTextEntry 
                 />
                 <TouchableHighlight
+                    onPress={this.onLoginPressed}
                     style={styles.button}
                 >
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableHighlight>
+                {errorCtrl}
+                <ActivityIndicatorIOS
+                    animating={this.state.showProgress}
+                    size="large"
+                    style={styles.loader}
+                />
             </View>
         )
+    }
+    
+    onLoginPressed(){
+        this.setState({
+            showProgress: true
+        });
+        console.log(this.state.username);
+        console.log(this.state.password);
+        var b = new Buffer(this.state.username + ':' + this.state.password);
+        var encodedAuth = b.toString('base64');
+        
+        fetch('https://api.github.com/user', {
+            headers: {
+                'Authorization': 'Basic ' + encodedAuth
+            }
+        })
+        .then((response)=>{
+            console.log(response);
+            if (response.status >= 200 && response.status < 300) {
+                this.setState({
+                    badCredentials: false,
+                    unknownError: false
+                });
+                return response;
+            }
+            
+            throw {
+                badCredentials: response.status == 401,
+                unknownError: response.status != 401
+            }
+        })
+        .then((response) => {
+            return response.json();
+        })
+        .catch((err) => {
+            this.setState(err);
+        })
+        .finally(() => {
+            this.setState({
+                showProgress: false
+            });
+        });
     }
 }
 
@@ -79,6 +150,13 @@ var styles = StyleSheet.create({
         fontSize: 22,
         color: '#FFF',
         alignSelf: 'center'
+    },
+    loader: {
+        marginTop: 24
+    },
+    error: {
+        paddingTop: 10,
+        color: 'red'
     }
 })
 
