@@ -1,7 +1,5 @@
 'use strict';
 
-import { Buffer } from 'buffer';
-
 import React, {
     Component,
     StyleSheet,
@@ -76,41 +74,20 @@ class Login extends Component {
         this.setState({
             showProgress: true
         });
-        console.log(this.state.username);
-        console.log(this.state.password);
-        var b = new Buffer(this.state.username + ':' + this.state.password);
-        var encodedAuth = b.toString('base64');
         
-        fetch('https://api.github.com/user', {
-            headers: {
-                'Authorization': 'Basic ' + encodedAuth
-            }
-        })
-        .then((response)=>{
-            console.log(response);
-            if (response.status >= 200 && response.status < 300) {
-                this.setState({
-                    badCredentials: false,
-                    unknownError: false
-                });
-                return response;
-            }
-            
-            throw {
-                badCredentials: response.status == 401,
-                unknownError: response.status != 401
-            }
-        })
-        .then((response) => {
-            return response.json();
-        })
-        .catch((err) => {
-            this.setState(err);
-        })
-        .finally(() => {
-            this.setState({
+        var authService = require('./AuthService');
+        
+        authService.login({
+            username: this.state.username,
+            password: this.state.password
+        }, (results) => {
+            this.setState(Object.assign({
                 showProgress: false
-            });
+            }, results));
+            
+            if (results.success && this.props.onLogin) {
+                this.props.onLogin();
+            }
         });
     }
 }
@@ -158,6 +135,6 @@ var styles = StyleSheet.create({
         paddingTop: 10,
         color: 'red'
     }
-})
+});
 
 module.exports = Login;
