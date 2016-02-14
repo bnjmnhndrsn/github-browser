@@ -13,6 +13,7 @@ import React, {
 } from 'react-native';
 
 import Login from './Login.js';
+import AppContainer from './AppContainer.js';
 import AuthService from './AuthService.js';
 
 
@@ -52,15 +53,10 @@ class GithubBrowser extends Component {
     }
     
     if (this.state.isLoggedIn) {
-      return (
-        <View style={styles.container}>
-          <Text style={styles.welcome}>Logged In</Text>
-        </View>
-      )
+      return <AppContainer />;
     }
-    return (
-      <Login onLogin={this.onLogin}/>
-    );
+    
+    return  <Login onLogin={this.onLogin}/>;
   }
 }
 
