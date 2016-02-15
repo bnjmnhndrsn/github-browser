@@ -8,6 +8,8 @@ import React, {
     TabBarIOS
 } from 'react-native';
 
+import Feed from './Feed.js';
+
 class AppContainer extends Component {
     constructor (props){
         super(props);
@@ -25,7 +27,7 @@ class AppContainer extends Component {
                 selected={this.state.selectedTab == 'feed'}
                 onPress={()=> this.setState({selectedTab: 'feed'})}
               >
-                <Text style={styles.welcome}>Tab 1</Text>
+                <Feed />
               </TabBarIOS.Item>
               <TabBarIOS.Item 
                 style={styles.container}
@@ -44,7 +46,6 @@ var styles = StyleSheet.create({
     container: {
         backgroundColor: '#F5FCFF',
         flex: 1,
-        alignItems: 'center',
         padding: 10
     },
     welcome: {
