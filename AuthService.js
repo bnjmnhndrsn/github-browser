@@ -1,5 +1,5 @@
-import { Buffer } from 'buffer';
 import { AsyncStorage } from 'react-native';
+var encoding = require('NativeModules').Encoding;
 const authKey = 'auth';
 const userKey = 'user';
 
@@ -37,45 +37,45 @@ class AuthService {
     login(creds, cb) {
         console.log(creds.username);
         console.log(creds.password);
-        var b = new Buffer(creds.username + ':' + creds.password);
-        var encodedAuth = b.toString('base64');
-        
-        fetch('https://api.github.com/user', {
-            headers: {
-                'Authorization': 'Basic ' + encodedAuth
-            }
-        })
-        .then((response)=>{
-            console.log(response);
-            if (response.status >= 200 && response.status < 300) {
-                return response;
-            }
-            
-            throw {
-                badCredentials: response.status == 401,
-                unknownError: response.status != 401
-            }
-        })
-        .then((response) => {
-            return response.json();
-        })
-        .then((results) => {
-            AsyncStorage.multiSet([
-                ['auth', encodedAuth],
-                ['user', JSON.stringify(results)]
-            ], (err) => {
-                if (err) {
-                    throw err;
+        var authStr = creds.username + ':' + creds.password;
+        encoding.base64Encode(authStr, (encodedAuth)=>{
+            fetch('https://api.github.com/user', {
+                headers: {
+                    'Authorization': 'Basic ' + encodedAuth
                 }
-                return cb({
-                    badCredentials: false,
-                    unknownError: false,
-                    success: true
-                });
             })
-        })
-        .catch((err) => {
-            cb(err);
+            .then((response)=>{
+                console.log(response);
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                }
+                
+                throw {
+                    badCredentials: response.status == 401,
+                    unknownError: response.status != 401
+                }
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((results) => {
+                AsyncStorage.multiSet([
+                    ['auth', encodedAuth],
+                    ['user', JSON.stringify(results)]
+                ], (err) => {
+                    if (err) {
+                        throw err;
+                    }
+                    return cb({
+                        badCredentials: false,
+                        unknownError: false,
+                        success: true
+                    });
+                })
+            })
+            .catch((err) => {
+                cb(err);
+            });
         });
     }
 }
