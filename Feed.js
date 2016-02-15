@@ -7,8 +7,11 @@ import React, {
     StyleSheet,
     ListView,
     ActivityIndicatorIOS,
-    Image
+    Image,
+    TouchableHighlight
 } from 'react-native';
+
+import PushPayload from './PushPayload';
 
 import moment from 'moment';
 
@@ -50,40 +53,55 @@ class Feed extends Component {
         })
     }
     
+    pressRow(rowData) {
+        console.log(rowData);
+        this.props.navigator.push({
+            title: 'Event',
+            component: PushPayload,
+            passProps: {
+                event: rowData
+            }
+        });
+    } 
+    
     renderRow(rowData, sectionID, rowID){ 
         return (
-            <View style={{
-                flex: 1,
-                flexDirection: 'row',
-                padding: 20,
-                alignItems: 'center',
-                borderColor: '#D7D7D7',
-                borderBottomWidth: 1
-            }}>
-                <Image
-                    source={{uri: rowData.actor.avatar_url}}
-                    style={{
-                        height: 36,
-                        width: 36,
-                        borderRadius: 18
-                    }}
-                />
+            <TouchableHighlight
+                onPress={()=> this.pressRow(rowData)}
+                underlayColor='#ddd'
+            >
                 <View style={{
-                    paddingLeft: 20,
-                    }}
-                >
-                    <Text style={{backgroundColor: '#fff'}}>
-                        {moment(rowData.created_at).fromNow()}
-                    </Text>
-                    <Text style={{backgroundColor: '#fff'}}>
-                        {rowData.actor.login}
-                    </Text>
-                    <Text style={{backgroundColor: '#fff'}}>
-                        {rowData.type}
-                    </Text>
+                    flex: 1,
+                    flexDirection: 'row',
+                    padding: 20,
+                    alignItems: 'center',
+                    borderColor: '#D7D7D7',
+                    borderBottomWidth: 1
+                }}>
+                    <Image
+                        source={{uri: rowData.actor.avatar_url}}
+                        style={{
+                            height: 36,
+                            width: 36,
+                            borderRadius: 18
+                        }}
+                    />
+                    <View style={{
+                        paddingLeft: 20,
+                        }}
+                    >
+                        <Text style={{backgroundColor: '#fff'}}>
+                            {moment(rowData.created_at).fromNow()}
+                        </Text>
+                        <Text style={{backgroundColor: '#fff'}}>
+                            {rowData.actor.login}
+                        </Text>
+                        <Text style={{backgroundColor: '#fff'}}>
+                            {rowData.type}
+                        </Text>
+                    </View>
                 </View>
-            </View>
-    
+            </TouchableHighlight>
         );
     }
     
